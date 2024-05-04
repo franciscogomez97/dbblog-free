@@ -299,6 +299,15 @@ class AdminDbBlogPostController extends ModuleAdminController
                 ),
 
                 array(
+                    'type' => 'datetime',
+                    'label' => $this->l('Fecha de publicación'),
+                    'name' => 'date_publi',
+                    'required' => true,
+                    'desc' => $this->l('Elige la fecha en la que se publicará el post.'),
+                    'date_format' => 'Y-m-d H:i:s',
+                ),
+                
+                array(
                     'type' => 'switch',
                     'label' => $this->trans('Destacado', array(), 'Admin.Global'),
                     'name' => 'featured',
@@ -366,6 +375,10 @@ class AdminDbBlogPostController extends ModuleAdminController
         $object = parent::processAdd();
 
         if ($object->id > 0) {
+
+            //Fecha de publicación
+            $object->date_publi = Tools::getValue('date_publi');
+
             // Imagen
             if (isset($_FILES['image']) && $_FILES['image']['size'] > 0) {
                 $image_name = $this->saveImg($object);
@@ -391,6 +404,10 @@ class AdminDbBlogPostController extends ModuleAdminController
         $object = parent::processUpdate();
 
         if ($object != false && $object->id_dbblog_post > 0) {
+
+            //Fecha de publicación
+            $object->date_publi = Tools::getValue('date_publi');
+            
             // Imagen
             $image_name = $this->saveImg($object);
             $object->image = $image_name;

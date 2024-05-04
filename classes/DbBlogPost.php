@@ -22,6 +22,7 @@ class DbBlogPost extends ObjectModel
     public $meta_description;
     public $date_add;
     public $date_upd;
+    public $date_public;
 
     public static $definition = array(
         'table' => 'dbblog_post',
@@ -38,15 +39,16 @@ class DbBlogPost extends ObjectModel
             'index' =>			        array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'date_add' =>		        array('type' => self::TYPE_DATE),
             'date_upd' =>		        array('type' => self::TYPE_DATE),
+            'date_publi' =>             array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
             
             // Lang fields
-            'short_desc' =>	        array('type' => self::TYPE_HTML, 'lang' => true, 'required' => false , 'validate' => 'isCleanHtml', 'size' => 4000),
-            'large_desc' =>	        array('type' => self::TYPE_HTML, 'lang' => true, 'required' => false , 'validate' => 'isCleanHtml'),
-			'title' =>			    array('type' => self::TYPE_STRING, 'lang' => true, 'required' => true , 'validate' => 'isCleanHtml', 'size' => 128),
-            'link_rewrite' =>	    array('type' => self::TYPE_STRING, 'lang' => true, 'required' => false , 'validate' => 'isCleanHtml', 'size' => 128),
-            'meta_title' =>	        array('type' => self::TYPE_STRING, 'lang' => true, 'required' => false , 'validate' => 'isCleanHtml', 'size' => 128),
-            'meta_description' =>	array('type' => self::TYPE_STRING, 'lang' => true, 'required' => false , 'validate' => 'isCleanHtml', 'size' => 255),
-            'image' =>			    array('type' => self::TYPE_STRING, 'lang' => true, 'required' => false , 'validate' => 'isCleanHtml', 'size' => 128),
+            'short_desc' =>	            array('type' => self::TYPE_HTML, 'lang' => true, 'required' => false , 'validate' => 'isCleanHtml', 'size' => 4000),
+            'large_desc' =>	            array('type' => self::TYPE_HTML, 'lang' => true, 'required' => false , 'validate' => 'isCleanHtml'),
+			'title' =>			        array('type' => self::TYPE_STRING, 'lang' => true, 'required' => true , 'validate' => 'isCleanHtml', 'size' => 128),
+            'link_rewrite' =>	        array('type' => self::TYPE_STRING, 'lang' => true, 'required' => false , 'validate' => 'isCleanHtml', 'size' => 128),
+            'meta_title' =>	            array('type' => self::TYPE_STRING, 'lang' => true, 'required' => false , 'validate' => 'isCleanHtml', 'size' => 128),
+            'meta_description' =>	    array('type' => self::TYPE_STRING, 'lang' => true, 'required' => false , 'validate' => 'isCleanHtml', 'size' => 255),
+            'image' =>			        array('type' => self::TYPE_STRING, 'lang' => true, 'required' => false , 'validate' => 'isCleanHtml', 'size' => 128),
         ),
     );
 
@@ -258,6 +260,8 @@ class DbBlogPost extends ObjectModel
     public static function getPost($id_lang, $rewrite)
     {
         $id_shop = (int)Context::getContext()->shop->id;
+        $today = date('Y-m-d H:i:s');
+
         $sql = "SELECT p.*, pl.*, cl.title as title_category, cl.link_rewrite as link_category
             FROM "._DB_PREFIX_."dbblog_post p
             INNER JOIN  "._DB_PREFIX_."dbblog_post_lang pl 
@@ -266,7 +270,8 @@ class DbBlogPost extends ObjectModel
             INNER JOIN "._DB_PREFIX_."dbblog_category_lang cl 
                 ON p.id_dbblog_category = cl.id_dbblog_category
                     AND cl.id_lang = '$id_lang' AND cl.id_shop = '$id_shop'
-            WHERE p.active = 1 AND pl.link_rewrite = '$rewrite'";
+            WHERE p.active = 1 AND pl.link_rewrite = '$rewrite'
+            AND (p.date_publi IS NULL OR p.date_publi <= '$today')";
         $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow($sql);
 
         $post = array();
@@ -288,6 +293,7 @@ class DbBlogPost extends ObjectModel
         $post['views'] = (int)$result['views'] + 1;
         $post['date_add'] = date_format(date_create($result['date_add']), 'd/m/Y');
         $post['date_upd'] = date_format(date_create($result['date_upd']), 'd/m/Y');
+        $post['date_publi'] = date_format(date_create($result['date_publi']), 'd/m/Y');
         $post['date_add_json'] = $result['date_add'];
         $post['date_upd_json'] = $result['date_upd'];
         $post['title_category'] = $result['title_category'];

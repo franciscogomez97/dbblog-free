@@ -65,6 +65,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'dbblog_post` (
             `active` tinyint(1) unsigned NOT NULL DEFAULT \'0\',
             `date_add` datetime NOT NULL,
             `date_upd` datetime NOT NULL,
+            `date_publi` datetime NOT NULL,
             PRIMARY KEY (`id_dbblog_post`)
         ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
@@ -94,6 +95,9 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'dbblog_comment` (
             `date_add` datetime NOT NULL,
             PRIMARY KEY (`id_dbblog_comment`, `id_post`)
         ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+$sql[] = 'ALTER TABLE `' . _DB_PREFIX_ . 'dbblog_post` (
+            ADD `date_publi` DATETIME NULL;';
 
 foreach ($sql as $query) {
     if (Db::getInstance()->execute($query) == false) {
